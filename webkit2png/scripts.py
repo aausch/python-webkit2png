@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # webkit2png.py
 #
@@ -29,7 +29,7 @@ from webkit2png import WebkitRenderer
 import sys
 import signal
 import os
-import urlparse
+import urllib
 import logging
 from optparse import OptionParser
 
@@ -72,7 +72,7 @@ def main():
 
     # Enable HTTP proxy
     if 'http_proxy' in os.environ:
-        proxy_url = urlparse.urlparse(os.environ.get('http_proxy'))
+        proxy_url = urllib.parse.urlparse(os.environ.get('http_proxy'))
         proxy = QNetworkProxy(QNetworkProxy.HttpProxy, proxy_url.hostname, proxy_url.port)
         QNetworkProxy.setApplicationProxy(proxy)
 
@@ -141,7 +141,7 @@ def main():
     if options.xvfb:
         # Start 'xvfb' instance by replacing the current process
         server_num = int(os.getpid() + 1e6)
-        newArgs = ["xvfb-run", "--auto-servernum", "--server-num", str(server_num), "--server-args=-screen 0, %dx%dx24" % options.xvfb, sys.argv[0]]
+        newArgs = ["xvfb-run", "--auto-servernum", "--server-num", str(server_num), "--server-args=-screen 0, %dx%dx24" % options.xvfb, os.path.realpath(__file__)]
         skipArgs = 0
         for i in range(1, len(sys.argv)):
             if skipArgs > 0:
@@ -162,7 +162,7 @@ def main():
     if options.output is None:
         options.output = sys.stdout
     else:
-        options.output = open(options.output, "w")
+        options.output = open(options.output, "wb")
 
     logger.debug("Version %s, Python %s, Qt %s", VERSION, sys.version, qVersion());
 
@@ -203,7 +203,7 @@ def main():
             renderer.render_to_file(res=options.url, file_object=options.output)
             options.output.close()
             QApplication.exit(0)
-        except RuntimeError, e:
+        except RuntimeError as e:
             logger.error("main: %s" % e)
             print >> sys.stderr, e
             QApplication.exit(1)
